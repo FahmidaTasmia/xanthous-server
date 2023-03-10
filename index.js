@@ -42,7 +42,24 @@ async function run(){
         const categoryCollections = client.db('xanthous').collection('Category');
         //products
         const productCollections = client.db('xanthous').collection('products');
+        //bookings
+        const bookingsCollection = client.db('xanthous').collection('bookings');
+        //best selling
+        const bestSellerCollections = client.db('xanthous').collection('bestselling');
 
+        //verify admin middleware
+
+        const verifyAdmin = async (req, res, next) =>{
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollections.findOne(query);
+
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+        
         //get all category
         app.get('/category', async(req,res)=>{
             const query ={};
@@ -65,6 +82,15 @@ async function run(){
             const query ={categoryId:(id)}
             const result= await productCollections.find(query).toArray();
             res.send(result);
+        })
+
+
+        //get best seller
+        app.get('/bestItem', async(req,res)=>{
+            const query ={};
+            const cursor = bestSellerCollections.find(query);
+            const result = await cursor.toArray();
+            res.send (result)
         })
 
         //get booking
